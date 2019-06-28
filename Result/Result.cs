@@ -21,8 +21,7 @@ namespace Result
         public bool IsOkay { get; }
         public bool IsError => !IsOkay;
 
-        private readonly TValue _value;
-        private readonly TError _error;
+        private readonly object _value;
 
         public static Result<TValue, TError> Okay(TValue value)
         {
@@ -43,7 +42,6 @@ namespace Result
 
             IsOkay = true;
             _value = value;
-            _error = default;
         }
 
         internal Result(TError error)
@@ -54,8 +52,7 @@ namespace Result
             }
 
             IsOkay = false;
-            _error = error;
-            _value = default;
+            _value = error;
         }
 
         public static implicit operator Result<TValue, TError>(TValue value)
@@ -72,11 +69,11 @@ namespace Result
         {
             if (IsOkay)
             {
-                return okayFunc(_value);
+                return okayFunc((TValue)_value);
             }
             else
             {
-                return errorFunc(_error);
+                return errorFunc((TError)_value);
             }
         }
 
@@ -84,11 +81,11 @@ namespace Result
         {
             if (IsOkay)
             {
-                okayAction(_value);
+                okayAction((TValue)_value);
             }
             else
             {
-                errorAction(_error);
+                errorAction((TError)_V);
             }
         }
 
@@ -128,12 +125,12 @@ namespace Result
 
         public bool Contains(TValue value)
         {
-            return IsOkay && _value.Equals(value);
+            return IsOkay && ((TValue)_value).Equals(value);
         }
 
         public bool ContainsError(TError error)
         {
-            return !IsOkay && _error.Equals(error);
+            return IsError && ((TError)_value).Equals(error);
         }
 
         public bool Equals(Result<TValue, TError> other)
@@ -165,12 +162,12 @@ namespace Result
 
         public IEnumerator<TValue> GetEnumerator()
         {
-            if (IsOkay) yield return _value;
+            if (IsOkay) yield return (TValue)_value;
         }
 
         public IEnumerable<TValue> AsEnumerable()
         {
-            if (IsOkay) yield return _value;
+            if (IsOkay) yield return (TValue)_value;
         }
     }
 }
