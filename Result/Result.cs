@@ -3,6 +3,22 @@ using System.Collections.Generic;
 
 namespace Result
 {
+    /// <summary>
+    /// Empty tuple.
+    /// 
+    /// Usage: Result<int, Unit>
+    /// </summary>
+    public struct Unit : IEquatable<Unit>
+    {
+        public bool Equals(Unit _) => true;
+
+        public override bool Equals(object obj) => obj is Unit;
+
+        public override int GetHashCode() => 3221 * 5039;
+
+        public override string ToString() => "()";
+    }
+
     public static class Result
     {
         public static Result<TValue, TError> Okay<TValue, TError>(TValue value)
@@ -85,7 +101,7 @@ namespace Result
             }
             else
             {
-                errorAction((TError)_V);
+                errorAction((TError)_value);
             }
         }
 
