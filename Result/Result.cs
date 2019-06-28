@@ -58,7 +58,17 @@ namespace Result
             _value = default;
         }
 
-        public UValue Match<UValue, UError>(Func<TValue, UValue> okayFunc, Func<TError, UValue> errorFunc)
+        public static implicit operator Result<TValue, TError>(TValue value)
+        {
+            return Okay(value);
+        }
+
+        public static implicit operator Result<TValue, TError>(TError error)
+        {
+            return Error(error);
+        }
+
+        public UValue Match<UValue>(Func<TValue, UValue> okayFunc, Func<TError, UValue> errorFunc)
         {
             if (IsOkay)
             {
@@ -104,22 +114,16 @@ namespace Result
 
         public Result<UValue, TError> Map<UValue>(Func<TValue, UValue> mapFunction)
         {
-            if (IsOkay)
-            {
-                return mapFunction(_value);
-            }
-
-            return _error;
+            return Match(
+                okay => mapFunction(okay),
+                error => Result<UValue, TError>.Error(error));
         }
 
         public Result<TValue, UError> MapError<UError>(Func<TError, UError> mapError)
         {
-            if (IsError)
-            {
-                return mapError(_error);
-            }
-
-            return _value;
+            return Match(
+                okay => Result.Okay<TValue, UError>(okay),
+                error => mapError(error));
         }
 
         public bool Contains(TValue value)
@@ -132,27 +136,11 @@ namespace Result
             return !IsOkay && _error.Equals(error);
         }
 
-        public IEnumerable<TValue> AsEnumerable()
-        {
-            if (IsOkay)
-            {
-                yield return _value;
-            }
-        }
-
         public bool Equals(Result<TValue, TError> other)
         {
-            if (IsOkay && other.IsOkay)
-            {
-                return _value.Equals(other._value);
-            }
-
-            if (IsError && other.IsError)
-            {
-                return _error.Equals(other._error);
-            }
-
-            return false;
+            return Match(
+                okay => other.Contains(okay),
+                error => other.ContainsError(error));
         }
 
         public override bool Equals(object obj)
@@ -163,29 +151,16 @@ namespace Result
 
         public override int GetHashCode()
         {
-            if (IsOkay)
-            {
-                return 2633 ^ _value.GetHashCode();
-            }
-            else
-            {
-                return 3137 ^ _error.GetHashCode();
-            }
+            return Match(
+                okay => 2633 ^ okay.GetHashCode(),
+                error => 3137 ^ error.GetHashCode());
         }
 
         public override string ToString()
         {
-            return IsOkay ? $"Okay({_value})" : $"Error({_error})";
-        }
-
-        public static implicit operator Result<TValue, TError>(TValue value)
-        {
-            return Okay(value);
-        }
-
-        public static implicit operator Result<TValue, TError>(TError error)
-        {
-            return Error(error);
+            return Match(
+                okay => $"Okay({okay})",
+                error => $"Error({error})");
         }
 
         public IEnumerator<TValue> GetEnumerator()
@@ -193,7 +168,7 @@ namespace Result
             if (IsOkay) yield return _value;
         }
 
-        public IEnumerable<TValue> ToEnumerable()
+        public IEnumerable<TValue> AsEnumerable()
         {
             if (IsOkay) yield return _value;
         }
