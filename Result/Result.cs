@@ -1,15 +1,201 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Result
 {
     public static class Result
     {
+        public static Result<TValue, TError> Okay<TValue, TError>(TValue value)
+        {
+            return new Result<TValue, TError>(value);
+        }
 
+        public static Result<TValue, TError> Error<TValue, TError>(TError error)
+        {
+            return new Result<TValue, TError>(error);
+        }
     }
 
-    public readonly struct Result<TValue, TError>
+    public struct Result<TValue, TError> : IEquatable<Result<TValue, TError>>
     {
         public bool IsOkay { get; }
         public bool IsError => !IsOkay;
+
+        private readonly TValue _value;
+        private readonly TError _error;
+
+        public static Result<TValue, TError> Okay(TValue value)
+        {
+            return new Result<TValue, TError>(value);
+        }
+
+        public static Result<TValue, TError> Error(TError error)
+        {
+            return new Result<TValue, TError>(error);
+        }
+
+        internal Result(TValue value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException("Result.Okay: the okay value cannot be null.");
+            }
+
+            IsOkay = true;
+            _value = value;
+            _error = default;
+        }
+
+        internal Result(TError error)
+        {
+            if (error == null)
+            {
+                throw new ArgumentNullException("Result.Error: the error value cannot be null.");
+            }
+
+            IsOkay = false;
+            _error = error;
+            _value = default;
+        }
+
+        public UValue Match<UValue, UError>(Func<TValue, UValue> okayFunc, Func<TError, UValue> errorFunc)
+        {
+            if (IsOkay)
+            {
+                return okayFunc(_value);
+            }
+            else
+            {
+                return errorFunc(_error);
+            }
+        }
+
+        public void Match(Action<TValue> okayAction, Action<TError> errorAction)
+        {
+            if (IsOkay)
+            {
+                okayAction(_value);
+            }
+            else
+            {
+                errorAction(_error);
+            }
+        }
+
+        public void MatchOkay(Action<TValue> action)
+        {
+            Match(action, _ => { });
+        }
+
+        public void MatchOkay(Action action)
+        {
+            Match(_ => action(), _ => { });
+        }
+
+        public void MatchError(Action<TError> action)
+        {
+            Match(_ => { }, action);
+        }
+
+        public void MatchError(Action action)
+        {
+            Match(_ => { }, _ => action());
+        }
+
+        public Result<UValue, TError> Map<UValue>(Func<TValue, UValue> mapFunction)
+        {
+            if (IsOkay)
+            {
+                return mapFunction(_value);
+            }
+
+            return _error;
+        }
+
+        public Result<TValue, UError> MapError<UError>(Func<TError, UError> mapError)
+        {
+            if (IsError)
+            {
+                return mapError(_error);
+            }
+
+            return _value;
+        }
+
+        public bool Contains(TValue value)
+        {
+            return IsOkay && _value.Equals(value);
+        }
+
+        public bool ContainsError(TError error)
+        {
+            return !IsOkay && _error.Equals(error);
+        }
+
+        public IEnumerable<TValue> AsEnumerable()
+        {
+            if (IsOkay)
+            {
+                yield return _value;
+            }
+        }
+
+        public bool Equals(Result<TValue, TError> other)
+        {
+            if (IsOkay && other.IsOkay)
+            {
+                return _value.Equals(other._value);
+            }
+
+            if (IsError && other.IsError)
+            {
+                return _error.Equals(other._error);
+            }
+
+            return false;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Result<TValue, TError> result
+                && Equals(result);
+        }
+
+        public override int GetHashCode()
+        {
+            if (IsOkay)
+            {
+                return 2633 ^ _value.GetHashCode();
+            }
+            else
+            {
+                return 3137 ^ _error.GetHashCode();
+            }
+        }
+
+        public override string ToString()
+        {
+            return IsOkay ? $"Okay({_value})" : $"Error({_error})";
+        }
+
+        public static implicit operator Result<TValue, TError>(TValue value)
+        {
+            return Okay(value);
+        }
+
+        public static implicit operator Result<TValue, TError>(TError error)
+        {
+            return Error(error);
+        }
+
+        public IEnumerator<TValue> GetEnumerator()
+        {
+            if (IsOkay) yield return _value;
+        }
+
+        public IEnumerable<TValue> ToEnumerable()
+        {
+            if (IsOkay) yield return _value;
+        }
     }
 }
