@@ -216,6 +216,36 @@ namespace ResultTests
         }
 
         [Fact]
+        public void Map_GivenValueAndFunctionThatReturnsResult_ReturnsMappedValue()
+        {
+            Result<string, TestError> getStringOrError(int value)
+            {
+                return value.ToString();
+            }
+
+            var result = Result<int, TestError>.Okay(5);
+
+            Result<string, TestError> stringResult = result.Map(getStringOrError);
+
+            Assert.True(stringResult.Contains("5"));
+        }
+
+        [Fact]
+        public void Map_GivenErrorAndFunctionThatReturnsResult_ReturnsError()
+        {
+            Result<string, TestError> getStringOrError(int value)
+            {
+                return value.ToString();
+            }
+
+            var result = Result<int, TestError>.Error(TestError.B);
+
+            Result<string, TestError> stringResult = result.Map(getStringOrError);
+
+            Assert.True(stringResult.ContainsError(TestError.B));
+        }
+
+        [Fact]
         public void MapError_GivenOkay_ReturnsMappedOkay()
         {
             var result = Result<string, int>.Okay("a");
