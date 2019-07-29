@@ -225,7 +225,7 @@ namespace ResultTests
 
             var result = Result<int, TestError>.Okay(5);
 
-            Result<string, TestError> stringResult = result.Map(getStringOrError);
+            Result<string, TestError> stringResult = result.AndThen(getStringOrError);
 
             Assert.True(stringResult.Contains("5"));
         }
@@ -240,7 +240,7 @@ namespace ResultTests
 
             var result = Result<int, TestError>.Error(TestError.B);
 
-            Result<string, TestError> stringResult = result.Map(getStringOrError);
+            Result<string, TestError> stringResult = result.AndThen(getStringOrError);
 
             Assert.True(stringResult.ContainsError(TestError.B));
         }

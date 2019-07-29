@@ -132,18 +132,18 @@ namespace Result
                 error => Result<UValue, TError>.Error(error));
         }
 
-        public Result<UValue, TError> Map<UValue>(Func<TValue, Result<UValue, TError>> mapFunction)
-        {
-            return Match(
-                okay => mapFunction(okay),
-                error => Result<UValue, TError>.Error(error));
-        }
-
         public Result<TValue, UError> MapError<UError>(Func<TError, UError> mapError)
         {
             return Match(
                 okay => Result.Okay<TValue, UError>(okay),
                 error => mapError(error));
+        }
+
+        public Result<UValue, TError> AndThen<UValue>(Func<TValue, Result<UValue, TError>> mapFunction)
+        {
+            return Match(
+                okay => mapFunction(okay),
+                error => Result<UValue, TError>.Error(error));
         }
 
         public bool Contains(TValue value)
