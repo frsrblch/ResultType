@@ -419,5 +419,20 @@ namespace ResultTests
             Assert.True(error.IsError);
         }
 
+        [Fact]
+        public void ValueOrThrow_GivenOkay_ReturnsValue()
+        {
+            Result<int, string> okay = 2;
+
+            Assert.Equal(2, okay.ValueOrThrow());
+        }
+
+        [Fact]
+        public void ValueOrThrow_GivenError_ThrowsException()
+        {
+            Result<int, string> error = "error";
+
+            Assert.Throws<InvalidOperationException>(() => error.ValueOrThrow());
+        }
     }
 }

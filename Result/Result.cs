@@ -8,11 +8,11 @@ namespace Result
     /// 
     /// Usage: Result<int, Unit>
     /// </summary>
-    public struct Unit : IEquatable<Unit>
+    public struct Error : IEquatable<Error>
     {
-        public bool Equals(Unit _) => true;
+        public bool Equals(Error _) => true;
 
-        public override bool Equals(object obj) => obj is Unit;
+        public override bool Equals(object obj) => obj is Error;
 
         public override int GetHashCode() => 3221 * 5039;
 
@@ -107,22 +107,30 @@ namespace Result
 
         public void MatchOkay(Action<TValue> action)
         {
-            Match(action, _ => { });
+            Match(
+                okay => action(okay),
+                _err => { });
         }
 
         public void MatchOkay(Action action)
         {
-            Match(_ => action(), _ => { });
+            Match(
+                _okay => action(),
+                _err => { });
         }
 
         public void MatchError(Action<TError> action)
         {
-            Match(_ => { }, action);
+            Match(
+                _okay => { },
+                error => action(error));
         }
 
         public void MatchError(Action action)
         {
-            Match(_ => { }, _ => action());
+            Match(
+                _okay => { },
+                _err => action());
         }
 
         public Result<UValue, TError> Map<UValue>(Func<TValue, UValue> mapFunction)
@@ -143,17 +151,42 @@ namespace Result
         {
             return Match(
                 okay => mapFunction(okay),
-                error => Result<UValue, TError>.Error(error));
+                error => error);
+        }
+
+        public Result<TValue, UError> OrElse<UError>(Func<TError, Result<TValue, UError>> mapFunction)
+        {
+            return Match(
+                okay => okay,
+                error => mapFunction(error));
+        }
+
+        public TValue ValueOrThrow(string message = null)
+        {
+            return Match(
+                okay => okay,
+                _err => throw new InvalidOperationException(message));
+        }
+
+        public TValue ValueOr(TValue other)
+        {
+            return Match(
+                okay => okay,
+                _err => other);
         }
 
         public bool Contains(TValue value)
         {
-            return IsOkay && ((TValue)_value).Equals(value);
+            return Match(
+                okay => okay.Equals(value),
+                _err => false);
         }
 
-        public bool ContainsError(TError error)
+        public bool ContainsError(TError value)
         {
-            return IsError && ((TError)_value).Equals(error);
+            return Match(
+                _okay => false,
+                error => error.Equals(value));
         }
 
         public bool Equals(Result<TValue, TError> other)
