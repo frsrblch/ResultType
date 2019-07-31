@@ -4,21 +4,6 @@ using System.Collections.Generic;
 
 namespace Result
 {
-    /// <summary>
-    /// Empty tuple.
-    /// 
-    /// Usage: Result<int, Unit>
-    /// </summary>
-    public struct Error : IEquatable<Error>
-    {
-        public bool Equals(Error _) => true;
-
-        public override bool Equals(object obj) => obj is Error;
-
-        public override int GetHashCode() => 3221 * 5039;
-
-        public override string ToString() => "()";
-    }
 
     public static class Result
     {
