@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using Option;
 using Result;
 using Xunit;
 
@@ -433,6 +433,38 @@ namespace ResultTests
             Result<int, string> error = "error";
 
             Assert.Throws<InvalidOperationException>(() => error.ValueOrThrow());
+        }
+
+        [Fact]
+        public void Okay_GivenOkay_ReturnsSome()
+        {
+            var okay = Result<int, string>.Okay(5);
+
+            Assert.Equal(5.Some(), okay.Okay());
+        }
+
+        [Fact]
+        public void Okay_GivenError_ReturnsNone()
+        {
+            var error = Result<int, string>.Error("e");
+
+            Assert.Equal(5.None(), error.Okay());
+        }
+
+        [Fact]
+        public void Error_GivenOkay_ReturnsNone()
+        {
+            var okay = Result<int, string>.Okay(5);
+
+            Assert.Equal(string.Empty.None(), okay.Error());
+        }
+
+        [Fact]
+        public void Error_GivenError_ReturnsSome()
+        {
+            var error = Result<int, string>.Error("e");
+
+            Assert.Equal("e".Some(), error.Error());
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Option;
+using System;
 using System.Collections.Generic;
 
 namespace Result
@@ -109,28 +110,28 @@ namespace Result
         {
             Match(
                 okay => action(okay),
-                _err => { });
+                error => { });
         }
 
         public void MatchOkay(Action action)
         {
             Match(
-                _okay => action(),
-                _err => { });
+                okay => action(),
+                error => { });
         }
 
         public void MatchError(Action<TError> action)
         {
             Match(
-                _okay => { },
+                okay => { },
                 error => action(error));
         }
 
         public void MatchError(Action action)
         {
             Match(
-                _okay => { },
-                _err => action());
+                okay => { },
+                error => action());
         }
 
         public Result<UValue, TError> Map<UValue>(Func<TValue, UValue> mapFunction)
@@ -161,31 +162,45 @@ namespace Result
                 error => mapFunction(error));
         }
 
+        public Option<TValue> Okay()
+        {
+            return Match(
+                okay => okay.Some(),
+                error => default);
+        }
+
+        public Option<TError> Error()
+        {
+            return Match(
+                okay => default,
+                error => error.Some());
+        }
+
         public TValue ValueOrThrow(string message = null)
         {
             return Match(
                 okay => okay,
-                _err => throw new InvalidOperationException(message));
+                error => throw new InvalidOperationException(message));
         }
 
         public TValue ValueOr(TValue other)
         {
             return Match(
                 okay => okay,
-                _err => other);
+                error => other);
         }
 
         public bool Contains(TValue value)
         {
             return Match(
                 okay => okay.Equals(value),
-                _err => false);
+                error => false);
         }
 
         public bool ContainsError(TError value)
         {
             return Match(
-                _okay => false,
+                okay => false,
                 error => error.Equals(value));
         }
 
