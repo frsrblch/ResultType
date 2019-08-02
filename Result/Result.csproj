@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <Reference Include="Option">
-      <HintPath>..\..\Maybe\Maybe\bin\Release\netstandard2.0\Option.dll</HintPath>
+      <HintPath>..\..\Option\Option\bin\Release\netstandard2.0\Option.dll</HintPath>
     </Reference>
   </ItemGroup>
 
