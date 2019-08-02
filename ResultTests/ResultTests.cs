@@ -466,5 +466,26 @@ namespace ResultTests
 
             Assert.Equal("e".Some(), error.Error());
         }
+
+        /// <summary>
+        /// This odd behaviour is the best I can do given C#'s insistence that all objects have a default value
+        /// </summary>
+        [Fact]
+        public void Default_BehavesOddlyForNullableErrorType()
+        {
+            Result<int, string> result = default;
+
+            Assert.True(result.IsError);
+            Assert.False(result.Error().HasValue);
+        }
+
+        [Fact]
+        public void Default_BehavesNormallyForNonNullableErrorType()
+        {
+            Result<int, int> result = default;
+
+            Assert.True(result.IsError);
+            Assert.True(result.Error().HasValue);
+        }
     }
 }

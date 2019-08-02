@@ -23,7 +23,8 @@ namespace Result
         public bool IsOkay { get; }
         public bool IsError => !IsOkay;
 
-        private readonly object _value;
+        private readonly TValue _value;
+        private readonly TError _error;
 
         public static Result<TValue, TError> Okay(TValue value)
         {
@@ -44,6 +45,7 @@ namespace Result
 
             IsOkay = true;
             _value = value;
+            _error = default;
         }
 
         internal Result(TError error)
@@ -54,7 +56,8 @@ namespace Result
             }
 
             IsOkay = false;
-            _value = error;
+            _value = default;
+            _error = error;
         }
 
         public static implicit operator Result<TValue, TError>(TValue value)
@@ -71,11 +74,11 @@ namespace Result
         {
             if (IsOkay)
             {
-                return okayFunc((TValue)_value);
+                return okayFunc(_value);
             }
             else
             {
-                return errorFunc((TError)_value);
+                return errorFunc(_error);
             }
         }
 
@@ -83,11 +86,11 @@ namespace Result
         {
             if (IsOkay)
             {
-                okayAction((TValue)_value);
+                okayAction(_value);
             }
             else
             {
-                errorAction((TError)_value);
+                errorAction(_error);
             }
         }
 
@@ -140,11 +143,25 @@ namespace Result
                 error => error);
         }
 
+        public Result<TValue, UError> Or<UError>(Result<TValue, UError> alternative)
+        {
+            return Match(
+                okay => okay,
+                _err => alternative);
+        }
+
         public Result<TValue, UError> OrElse<UError>(Func<TError, Result<TValue, UError>> mapFunction)
         {
             return Match(
                 okay => okay,
                 error => mapFunction(error));
+        }
+
+        public Result<TValue, UError> OrElse<UError>(Func<Result<TValue, UError>> operation)
+        {
+            return Match(
+                okay => okay,
+                _err => operation());
         }
 
         public Option<TValue> Okay()
@@ -173,6 +190,13 @@ namespace Result
             return Match(
                 okay => okay,
                 error => other);
+        }
+
+        public TError ErrorOrThrow(string message = null)
+        {
+            return Match(
+                okay => throw new InvalidOperationException(message),
+                error => error);
         }
 
         public bool Contains(TValue value)
