@@ -1,8 +1,8 @@
-﻿using Option;
+﻿using OptionType;
 using System;
 using System.Collections.Generic;
 
-namespace Result
+namespace ResultType
 {
 
     public static class Result
@@ -242,12 +242,12 @@ namespace Result
 
         public IEnumerator<TValue> GetEnumerator()
         {
-            if (IsOkay) yield return (TValue)_value;
+            if (IsOkay) yield return _value;
         }
 
         public IEnumerable<TValue> AsEnumerable()
         {
-            if (IsOkay) yield return (TValue)_value;
+            if (IsOkay) yield return _value;
         }
     }
 }

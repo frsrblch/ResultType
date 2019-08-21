@@ -1,6 +1,6 @@
 ﻿using System;
-using Option;
-using Result;
+using OptionType;
+using ResultType;
 using Xunit;
 
 namespace ResultTests
@@ -476,7 +476,7 @@ namespace ResultTests
             Result<int, string> result = default;
 
             Assert.True(result.IsError);
-            Assert.False(result.Error().HasValue);
+            Assert.False(result.Error().IsSome);
         }
 
         [Fact]
@@ -485,7 +485,7 @@ namespace ResultTests
             Result<int, int> result = default;
 
             Assert.True(result.IsError);
-            Assert.True(result.Error().HasValue);
+            Assert.True(result.Error().IsSome);
         }
     }
 }

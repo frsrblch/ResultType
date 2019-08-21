@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Result
+namespace ResultType
 {
     public struct Error : IEquatable<Error>
     {
