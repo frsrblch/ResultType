@@ -4,20 +4,6 @@ using System.Collections.Generic;
 
 namespace ResultType
 {
-
-    public static class Result
-    {
-        public static Result<TValue, TError> Okay<TValue, TError>(TValue value)
-        {
-            return new Result<TValue, TError>(value);
-        }
-
-        public static Result<TValue, TError> Error<TValue, TError>(TError error)
-        {
-            return new Result<TValue, TError>(error);
-        }
-    }
-
     public struct Result<TValue, TError> : IEquatable<Result<TValue, TError>>
     {
         public bool IsOkay { get; }

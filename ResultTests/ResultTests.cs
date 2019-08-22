@@ -487,5 +487,78 @@ namespace ResultTests
             Assert.True(result.IsError);
             Assert.True(result.Error().IsSome);
         }
+
+        [Fact]
+        public void CombineWith_SingleResult_BothOkay()
+        {
+            Result<int, string> result_a = 1;
+            Func<Result<bool, string>> get_result_b = () => true;
+
+            var combined = result_a.CombineWith(get_result_b);
+
+            Assert.True(combined.Contains((1, true)));
+        }
+
+        [Fact]
+        public void CombineWith_SingleResult_FirstError()
+        {
+            Result<int, string> result_a = "foo";
+            Func<Result<bool, string>> get_result_b = () => true;
+
+            var combined = result_a.CombineWith(get_result_b);
+
+            Assert.True(combined.ContainsError("foo"));
+        }
+
+        [Fact]
+        public void CombineWith_SingleResult_SecondError()
+        {
+            Result<int, string> result_a = 1;
+            Func<Result<bool, string>> get_result_b = () => "bar";
+
+            var combined = result_a.CombineWith(get_result_b);
+
+            Assert.True(combined.ContainsError("bar"));
+        }
+
+        [Fact]
+        public void CombineWith_FiveResults_AllOkay()
+        {
+            Result<int, string> result_a = 1;
+            Result<bool, string> result_b = true;
+            Result<string, string> result_c = Result.Okay<string, string>("foo");
+            Result<double, string> result_d = 3.141;
+            Result<TestValue, string> result_e = TestValue.One;
+            Result<Okay, string> result_f = new Okay();
+
+            var combined = result_a
+                .CombineWith(() => result_b)
+                .CombineWith(() => result_c)
+                .CombineWith(() => result_d)
+                .CombineWith(() => result_e)
+                .CombineWith(() => result_f);
+
+            Assert.True(combined.Contains((1, true, "foo", 3.141, TestValue.One, new Okay())));
+        }
+
+        [Fact]
+        public void CombineWith_FiveResults_ErrorInMiddle()
+        {
+            Result<int, string> result_a = 1;
+            Result<bool, string> result_b = true;
+            Result<string, string> result_c = Result.Error<string, string>("foo");
+            Result<double, string> result_d = 3.141;
+            Result<TestValue, string> result_e = TestValue.One;
+            Result<Okay, string> result_f = new Okay();
+
+            var combined = result_a
+                .CombineWith(() => result_b)
+                .CombineWith(() => result_c)
+                .CombineWith(() => result_d)
+                .CombineWith(() => result_e)
+                .CombineWith(() => result_f);
+
+            Assert.True(combined.ContainsError("foo"));
+        }
     }
 }
