@@ -178,11 +178,48 @@ namespace ResultType
                 error => other);
         }
 
+        public TValue ValueOr(Func<TValue> getAlternative)
+        {
+            return Match(
+                okay => okay,
+                error => getAlternative());
+        }
+
         public TError ErrorOrThrow(string message = null)
         {
             return Match(
                 okay => throw new InvalidOperationException(message),
                 error => error);
+        }
+
+        public Result<TValue, TError> Filter(Predicate<TValue> isOkay, TError elseError)
+        {
+            return AndThen(value =>
+            {
+                if (isOkay(value))
+                {
+                    return Result.Okay<TValue, TError>(value);
+                }
+                else
+                {
+                    return elseError;
+                }
+            });
+        }
+
+        public Result<TValue, TError> Filter(Predicate<TValue> isOkay, Func<TError> getError)
+        {
+            return AndThen(value =>
+            {
+                if (isOkay(value))
+                {
+                    return Result.Okay<TValue, TError>(value);
+                }
+                else
+                {
+                    return getError();
+                }
+            });
         }
 
         public bool Contains(TValue value)

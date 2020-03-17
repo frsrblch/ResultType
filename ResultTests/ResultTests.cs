@@ -522,7 +522,7 @@ namespace ResultTests
         }
 
         [Fact]
-        public void CombineWith_FiveResults_AllOkay()
+        public void CombineWith_FiveResultFuncs_AllOkay()
         {
             Result<int, string> result_a = 1;
             Result<bool, string> result_b = true;
@@ -542,7 +542,7 @@ namespace ResultTests
         }
 
         [Fact]
-        public void CombineWith_FiveResults_ErrorInMiddle()
+        public void CombineWith_FiveResultFuncs_ErrorInMiddle()
         {
             Result<int, string> result_a = 1;
             Result<bool, string> result_b = true;
@@ -560,5 +560,70 @@ namespace ResultTests
 
             Assert.True(combined.ContainsError("foo"));
         }
+
+        [Fact]
+        public void CombineWith_FiveResults_ErrorInMiddle()
+        {
+            Result<int, string> result_a = 1;
+            Result<bool, string> result_b = true;
+            Result<string, string> result_c = Result.Error<string, string>("foo");
+            Result<double, string> result_d = 3.141;
+            Result<TestValue, string> result_e = TestValue.One;
+            Result<Okay, string> result_f = new Okay();
+
+            var combined = result_a
+                .CombineWith(result_b)
+                .CombineWith(result_c)
+                .CombineWith(result_d)
+                .CombineWith(result_e)
+                .CombineWith(result_f);
+
+            Assert.True(combined.ContainsError("foo"));
+        }
+
+        [Fact]
+        public void Try_GivenThrow_ReturnsError()
+        {
+            var result = Result.Try(() => throw new Exception());
+
+            Assert.True(result.IsError);
+        }
+
+        [Fact]
+        public void Try_GivenActionThatDoesNotThrow_ReturnsOkay()
+        {
+            var result = Result.Try(() => { });
+
+            Assert.True(result.IsOkay);
+        }
+
+        [Fact]
+        public void Try_GivenFunctionThatDoesNotThrow_ReturnsOkay()
+        {
+            var result = Result.Try(() => 1);
+
+            Assert.True(result.IsOkay);
+            Assert.True(result.Contains(1));
+        }
+
+        [Fact]
+        public void Filter_GivenPredicateTrue_ReturnsOkay()
+        {
+            var oddNumber = Result.Okay<int, Error>(1);
+            var filtered = oddNumber.Filter(IsOdd, new Error("value is even"));
+
+            Assert.True(filtered.IsOkay);
+        }
+
+        [Fact]
+        public void Filter_GivenPredicateFalse_ReturnsError()
+        {
+            var evenNumber = Result.Okay<int, Error>(2);
+            var filtered = evenNumber.Filter(IsOdd, new Error("value is even"));
+
+            Assert.True(filtered.IsError);
+        }
+
+        private bool IsOdd(int i) => i % 2 != 0;
     }
 }
